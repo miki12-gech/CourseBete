@@ -30,7 +30,7 @@ app.use('/api/quiz', quizRoutes);
 
 
 app.get('/', (req, res) => {
-  res.send('Senbet Tmhrt Bet API is running!');
+  res.send('CourseBete API is running!');
 });
 
 
