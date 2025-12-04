@@ -1,8 +1,7 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.MODE === 'production' 
-  ? 'https://coursebete.onrender.com/api' 
-  : 'http://localhost:5000/api';
+// --- HARDCODED URL (We will change this back if you develop locally later) ---
+const API_URL = 'https://coursebete.onrender.com/api'; 
 
 const api = axios.create({
   baseURL: API_URL,
