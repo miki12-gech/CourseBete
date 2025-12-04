@@ -1,28 +1,30 @@
 import { useState, useEffect } from 'react';
 import api from '../api'; 
-import { PlusCircle, Book, Users, Trash2, Plus, Edit, LogOut, Eye, X } from 'lucide-react';
+import { PlusCircle, Book, Users, Trash2, Plus, Edit, LogOut, Eye, X, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('courses'); 
   const [courses, setCourses] = useState([]);
   const [students, setStudents] = useState([]);
+  const [stats, setStats] = useState({ totalStudents: 0, totalCourses: 0 });
   const [selectedStudent, setSelectedStudent] = useState(null);
 
   const navigate = useNavigate();
 
-  
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
-        
-        
         const coursesRes = await api.get('/courses');
         setCourses(coursesRes.data);
 
-       
         const studentsRes = await api.get('/students');
         setStudents(studentsRes.data);
+
+        setStats({ 
+            totalStudents: studentsRes.data.length, 
+            totalCourses: coursesRes.data.length 
+        });
 
       } catch (error) {
         console.error("Error loading admin data", error);
@@ -32,45 +34,50 @@ function AdminDashboard() {
     fetchAdminData();
   }, [navigate]);
 
-  
   const handleLogout = () => {
     localStorage.clear();
     navigate('/login');
   };
 
-  
   const handleDeleteCourse = async (id) => {
     if(!window.confirm("Are you sure? This will delete all lessons and quizzes inside it.")) return;
 
     try {
-       
         await api.delete(`/courses/${id}`);
-        
-        
         setCourses(courses.filter(c => c.id !== id));
+        setStats(prev => ({ ...prev, totalCourses: prev.totalCourses - 1 }));
     } catch (err) {
         alert("Failed to delete course");
     }
   };
 
-  
   const handleDeleteStudent = async (id) => {
     if(!window.confirm("Are you sure you want to remove this student?")) return;
 
     try {
-        
         await api.delete(`/users/${id}`);
-        
-        
         setStudents(students.filter(s => s.id !== id));
+        setStats(prev => ({ ...prev, totalStudents: prev.totalStudents - 1 }));
     } catch (err) {
         alert("Failed to delete student");
     }
   };
 
+  const handleToggleRole = async (student) => {
+    if(!window.confirm(`Make ${student.fullName} an Admin?`)) return;
+
+    try {
+        await api.put(`/users/${student.id}/role`);
+        alert("User promoted to Admin successfully!");
+        setStudents(students.filter(s => s.id !== student.id));
+        setStats(prev => ({ ...prev, totalStudents: prev.totalStudents - 1 }));
+    } catch (err) {
+        alert("Failed to update role");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-8 relative">
-      
       
       {selectedStudent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
@@ -126,7 +133,6 @@ function AdminDashboard() {
         </div>
       )}
 
-      
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
@@ -149,7 +155,6 @@ function AdminDashboard() {
         </div>
       </div>
 
-      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500 flex items-center gap-4">
             <div className="p-3 bg-blue-100 text-blue-600 rounded-full"><Book size={24} /></div>
@@ -167,7 +172,6 @@ function AdminDashboard() {
         </div>
       </div>
 
-     
       <div className="bg-white rounded-xl shadow-sm overflow-hidden min-h-[400px]">
         <div className="flex border-b">
             <button 
@@ -184,12 +188,10 @@ function AdminDashboard() {
             </button>
         </div>
 
-       
         {activeTab === 'courses' && (
             <table className="w-full text-left border-collapse">
                 <thead>
                     <tr className="bg-gray-50 text-gray-500 text-sm uppercase">
-                        <th className="p-4">ID</th>
                         <th className="p-4">Title</th>
                         <th className="p-4">Lessons</th>
                         <th className="p-4 text-center">Actions</th>
@@ -198,11 +200,9 @@ function AdminDashboard() {
                 <tbody>
                     {courses.map((course) => (
                         <tr key={course.id} className="border-b hover:bg-gray-50">
-                            <td className="p-4 text-gray-500">#{course.id}</td>
                             <td className="p-4 font-bold text-gray-800">{course.title}</td>
                             <td className="p-4 text-blue-600 font-medium">{course.lessonCount} Lessons</td>
                             <td className="p-4 flex gap-2 justify-center">
-                               
                                 <button 
                                     onClick={() => navigate(`/admin/course/${course.id}/add-lesson`)}
                                     className="text-blue-600 bg-blue-50 p-2 rounded hover:bg-blue-100" 
@@ -210,7 +210,6 @@ function AdminDashboard() {
                                 >
                                     <Plus size={18}/>
                                 </button>
-                                
                                 <button 
                                     onClick={() => navigate(`/admin/edit-course/${course.id}`)}
                                     className="text-yellow-600 bg-yellow-50 p-2 rounded hover:bg-yellow-100" 
@@ -218,7 +217,6 @@ function AdminDashboard() {
                                 >
                                     <Edit size={18}/>
                                 </button>
-                              
                                 <button 
                                     onClick={() => handleDeleteCourse(course.id)}
                                     className="text-red-600 bg-red-50 p-2 rounded hover:bg-red-100" 
@@ -233,7 +231,6 @@ function AdminDashboard() {
             </table>
         )}
 
-       
         {activeTab === 'students' && (
             <table className="w-full text-left border-collapse">
                 <thead>
@@ -257,14 +254,19 @@ function AdminDashboard() {
                                     </span>
                                 </td>
                                 <td className="p-4 flex gap-3 justify-center">
-                                    
                                     <button 
                                         onClick={() => setSelectedStudent(student)}
                                         className="flex items-center gap-1 text-blue-600 hover:text-blue-800 font-bold text-sm bg-blue-50 px-3 py-1 rounded"
                                     >
                                         <Eye size={16} /> View
                                     </button>
-                                    
+
+                                    <button 
+                                        onClick={() => handleToggleRole(student)}
+                                        className="flex items-center gap-1 text-purple-600 hover:text-purple-800 font-bold text-sm bg-purple-50 px-3 py-1 rounded"
+                                    >
+                                        <Shield size={16} /> Admin
+                                    </button>
                                     
                                     <button 
                                         onClick={() => handleDeleteStudent(student.id)}

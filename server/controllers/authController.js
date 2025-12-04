@@ -5,7 +5,6 @@ const jwt = require('jsonwebtoken');
 const prisma = new PrismaClient();
 const SECRET_KEY = process.env.JWT_SECRET || "super_secret_key_123";
 
-
 exports.register = async (req, res) => {
     try {
         const { fullName, email, password } = req.body;
@@ -24,7 +23,6 @@ exports.register = async (req, res) => {
         res.status(500).json({ error: "Registration failed" });
     }
 };
-
 
 exports.login = async (req, res) => {
     try {
@@ -50,7 +48,6 @@ exports.login = async (req, res) => {
     }
 };
 
-
 exports.getAllStudents = async (req, res) => {
     try {
         const students = await prisma.user.findMany({
@@ -60,7 +57,6 @@ exports.getAllStudents = async (req, res) => {
                 fullName: true, 
                 email: true, 
                 createdAt: true,
-                
                 quizResults: {
                     select: {
                         score: true,
@@ -81,7 +77,6 @@ exports.getAllStudents = async (req, res) => {
     }
 };
 
-
 exports.deleteUser = async (req, res) => {
     try {
         const { id } = req.params;
@@ -89,5 +84,25 @@ exports.deleteUser = async (req, res) => {
         res.json({ message: "User deleted" });
     } catch (error) {
         res.status(500).json({ error: "Failed to delete user" });
+    }
+};
+
+exports.updateUserRole = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await prisma.user.findUnique({ where: { id: parseInt(id) } });
+        
+        if (!user) return res.status(404).json({ error: "User not found" });
+
+        const newRole = user.role === 'student' ? 'admin' : 'student';
+
+        const updatedUser = await prisma.user.update({
+            where: { id: parseInt(id) },
+            data: { role: newRole }
+        });
+
+        res.json({ message: `User is now an ${newRole}`, user: updatedUser });
+    } catch (error) {
+        res.status(500).json({ error: "Failed to update role" });
     }
 };
