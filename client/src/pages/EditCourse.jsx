@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api'; 
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
 
@@ -14,14 +14,13 @@ function EditCourse() {
     thumbnailUrl: ''
   });
 
-
+  
   useEffect(() => {
     const fetchCourse = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const res = await axios.get(`http://localhost:5000/api/courses/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            
+            const res = await api.get(`/courses/${id}`);
+            
             setFormData({
                 title: res.data.title,
                 description: res.data.description || '',
@@ -44,10 +43,8 @@ function EditCourse() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/courses/${id}`, formData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      
+      await api.put(`/courses/${id}`, formData);
 
       alert("Course Updated Successfully!");
       navigate('/admin'); 

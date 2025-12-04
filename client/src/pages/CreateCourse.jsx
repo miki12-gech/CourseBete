@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+import api from '../api'; 
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
 
@@ -21,12 +21,8 @@ function CreateCourse() {
     setLoading(true);
     
     try {
-      const token = localStorage.getItem('token');
-      
      
-      await axios.post('http://localhost:5000/api/courses', formData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.post('/courses', formData);
 
       alert("Course Created Successfully!");
       navigate('/admin'); 
@@ -43,7 +39,6 @@ function CreateCourse() {
     <div className="min-h-screen bg-gray-100 p-8 flex justify-center">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-2xl h-fit">
         
-       
         <div className="flex items-center gap-4 mb-6 border-b pb-4">
             <button onClick={() => navigate('/admin')} className="text-gray-500 hover:text-blue-600">
                 <ArrowLeft size={24} />
@@ -51,7 +46,6 @@ function CreateCourse() {
             <h1 className="text-2xl font-bold text-gray-800">Create New Course</h1>
         </div>
 
-        
         <form onSubmit={handleSubmit} className="space-y-6">
           
           <div>

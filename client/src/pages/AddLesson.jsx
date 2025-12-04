@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api'; 
 import { Plus, Trash, Save, ArrowLeft } from 'lucide-react';
 
 function AddLesson() {
@@ -15,46 +15,37 @@ function AddLesson() {
     order: 1
   });
 
-
   const [questions, setQuestions] = useState([
     { questionText: '', options: ['', '', '', ''], correctAnswer: 0, explanation: '' }
   ]);
 
-
   const handleLessonChange = (e) => setLesson({ ...lesson, [e.target.name]: e.target.value });
 
-  
   const addQuestion = () => {
     setQuestions([...questions, { questionText: '', options: ['', '', '', ''], correctAnswer: 0, explanation: '' }]);
   };
 
- 
   const handleQuestionChange = (index, field, value) => {
     const newQuestions = [...questions];
     newQuestions[index][field] = value;
     setQuestions(newQuestions);
   };
 
-  
   const handleOptionChange = (qIndex, oIndex, value) => {
     const newQuestions = [...questions];
     newQuestions[qIndex].options[oIndex] = value;
     setQuestions(newQuestions);
   };
 
-  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
       
-      await axios.post(`http://localhost:5000/api/courses/${courseId}/lessons`, {
+      await api.post(`/courses/${courseId}/lessons`, {
         ...lesson,
         questions 
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
 
       alert("Lesson & Quiz Added!");
@@ -79,7 +70,6 @@ function AddLesson() {
 
         <form onSubmit={handleSubmit} className="space-y-8">
           
-        
           <div className="space-y-4 bg-blue-50 p-6 rounded-lg">
             <h3 className="font-bold text-blue-800">1. Lesson Details</h3>
             <input type="text" name="title" placeholder="Lesson Title" onChange={handleLessonChange} className="w-full p-3 border rounded" required />
