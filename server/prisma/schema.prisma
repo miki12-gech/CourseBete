@@ -34,7 +34,7 @@ model Course {
   enrollments   Enrollment[]
 }
 
-// 3. THE LESSONS (Updated)
+// 3. THE LESSONS
 model Lesson {
   id          Int           @id @default(autoincrement())
   title       String
@@ -46,17 +46,17 @@ model Lesson {
   course      Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   // Relationships
-  questions   Question[]    // <--- NEW: A lesson has many questions
+  questions   Question[]
   quizResults QuizResult[]
 }
 
-// 4. THE QUESTIONS (New Model)
+// 4. THE QUESTIONS
 model Question {
   id            Int      @id @default(autoincrement())
   questionText  String
   options       String[]
   correctAnswer Int
-  explanation   String?  // <--- NEW: Optional explanation text
+  explanation   String?
   
   lessonId      Int
   lesson        Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
@@ -84,9 +84,9 @@ model QuizResult {
   attemptedAt DateTime  @default(now())
 
   userId      Int
-  user        User      @relation(fields: [userId], references: [id])
+  // --- UPDATED: Added onDelete: Cascade here ---
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   lessonId    Int
-  // --- CHANGE THIS LINE TO INCLUDE onDelete: Cascade ---
   lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 }
