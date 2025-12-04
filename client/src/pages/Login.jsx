@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+import api from '../api'; // <--- CORRECT IMPORT
 import { useNavigate } from 'react-router-dom';
 
 function Login() {
@@ -17,12 +17,11 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Now 'api' will work because we imported it!
       const response = await api.post('/login', formData);
-      
       
       const token = response.data.token;
       const role = response.data.role; 
-      
       
       localStorage.setItem('token', token);
       localStorage.setItem('userName', response.data.name);
@@ -32,10 +31,8 @@ function Login() {
       
       setTimeout(() => {
         if (role === 'admin') {
-            console.log("User is Admin: Going to Admin Dashboard");
             navigate('/admin');
         } else {
-            console.log("User is Student: Going to Student Dashboard");
             navigate('/dashboard');
         }
       }, 1000);
